@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.*;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 
-//Controlador REST para acessar os eventos
+//Controller REST para acessar os eventos
 @RestController
 @RequestMapping("/api/calendar")
 public class GoogleCalendarController {

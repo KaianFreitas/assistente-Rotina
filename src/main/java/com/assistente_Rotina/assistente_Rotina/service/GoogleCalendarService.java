@@ -14,14 +14,17 @@ import com.google.api.client.util.store.FileDataStoreFactory;
 import com.google.api.services.calendar.Calendar;
 import com.google.api.services.calendar.CalendarScopes;
 import com.google.api.services.calendar.model.*;
+import org.springframework.stereotype.Service;
 
 import java.io.*;
 import java.security.GeneralSecurityException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
 //Responsável por autenticar e buscar eventos no calendario google.
+@Service
 public class GoogleCalendarService {
 
     private static final String APPLICATION_NAME = "Assistente de Rotina";
@@ -82,6 +85,13 @@ public class GoogleCalendarService {
                 System.out.printf("%s - %s%n", start, event.getSummary());
             }
         }
+    }
+
+    public List<String> getEventosDoDia() {
+        List<String> eventos = new ArrayList<>();
+        eventos.add("Reunião com equipe às 10:00");
+        eventos.add("Consulta médica às 15:30");
+        return eventos;
     }
 }
 
