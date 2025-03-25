@@ -33,7 +33,7 @@ public class GoogleCalendarService {
 
     //Escopos para acessar o calendario google.
     private static final List<String> SCOPES = Collections.singletonList(CalendarScopes.CALENDAR_READONLY);
-    private static final String CREDENTIALS_FILE_PATH = "/credentials.json";
+    private static final String CREDENTIALS_FILE_PATH = "/client_secret_59356497731-bp92kll0u6ec1ed04726i1urv9vq86ev.apps.googleusercontent.com.json";
 
    //Retorna as credenciais para autenticação na API
     private static Credential getCredentials(HttpTransport httpTransport) throws IOException {

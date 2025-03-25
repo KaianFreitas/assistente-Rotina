@@ -13,6 +13,7 @@ public class MainApp extends Application {
 
     @Override
     public void start(Stage primaryStage) {
+
         // Layout para os elementos
         VBox vbox = new VBox();
 
