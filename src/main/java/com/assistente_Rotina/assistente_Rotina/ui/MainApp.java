@@ -8,6 +8,10 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
+import com.assistente_Rotina.assistente_Rotina.service.GoogleCalendarService;
+
+import java.io.IOException;
+import java.security.GeneralSecurityException;
 
 public class MainApp extends Application {
 
@@ -27,7 +31,12 @@ public class MainApp extends Application {
         btnSubmit.setOnAction(event -> {
             String eventName = eventField.getText();
             System.out.println("Evento: " + eventName);
-            // A partir daqui, você pode integrar com o Google Calendar
+            try {
+                // Chama o metodo para criar o evento no Google Calendar
+                GoogleCalendarService.createEvent(eventName);
+            } catch (IOException | GeneralSecurityException e) {
+                e.printStackTrace();
+            }
         });
 
         // Layout horizontal para a label e campo de texto

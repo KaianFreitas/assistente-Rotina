@@ -20,10 +20,9 @@ import java.io.*;
 import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 
-//Responsável por autenticar e buscar eventos no calendario google.
+// Responsável por autenticar e manipular eventos no Google Calendar.
 @Service
 public class GoogleCalendarService {
 
@@ -31,13 +30,13 @@ public class GoogleCalendarService {
     private static final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
     private static final String TOKENS_DIRECTORY_PATH = "tokens";
 
-    //Escopos para acessar o calendario google.
-    private static final List<String> SCOPES = Collections.singletonList(CalendarScopes.CALENDAR_READONLY);
+    // Escopos para acessar o Google Calendar.
+    private static final List<String> SCOPES = Collections.singletonList(CalendarScopes.CALENDAR);
     private static final String CREDENTIALS_FILE_PATH = "/client_secret_59356497731-bp92kll0u6ec1ed04726i1urv9vq86ev.apps.googleusercontent.com.json";
 
-   //Retorna as credenciais para autenticação na API
+    // Retorna as credenciais para autenticação na API.
     private static Credential getCredentials(HttpTransport httpTransport) throws IOException {
-        InputStream in = GoogleCalendarService.class.getResourceAsStream(CREDENTIALS_FILE_PATH);
+        InputStream in = GoogleCalendarService.class.getClassLoader().getResourceAsStream("client_secret_59356497731-bp92kll0u6ec1ed04726i1urv9vq86ev.apps.googleusercontent.com.json");
         if (in == null) {
             throw new FileNotFoundException("Arquivo de credenciais não encontrado: " + CREDENTIALS_FILE_PATH);
         }
@@ -53,8 +52,8 @@ public class GoogleCalendarService {
         return new AuthorizationCodeInstalledApp(flow, new LocalServerReceiver()).authorize("user");
     }
 
-    //Obtém os eventos do dia no google calendario
-    public static void listarEventosDoDia() throws IOException, GeneralSecurityException {
+    // Metodo para listar eventos do Google Calendar
+    public List<String> listarEventosDoDia() throws IOException, GeneralSecurityException {
         HttpTransport httpTransport = GoogleNetHttpTransport.newTrustedTransport();
         Credential credential = getCredentials(httpTransport);
 
@@ -64,34 +63,66 @@ public class GoogleCalendarService {
 
         // Define o período para buscar eventos
         DateTime now = new DateTime(System.currentTimeMillis());
-        Events events = service.events().list("Principal")
+        Events events = service.events().list("primary") // Calendário principal
                 .setTimeMin(now)
                 .setMaxResults(10)
-                .setOrderBy("Início")
+                .setOrderBy("startTime")
                 .setSingleEvents(true)
                 .execute();
 
         List<Event> items = events.getItems();
+        List<String> eventos = new ArrayList<>();
 
         if (items.isEmpty()) {
-            System.out.println("Nenhum evento encontrado para hoje.");
+            eventos.add("Nenhum evento encontrado para hoje.");
         } else {
-            System.out.println("Eventos para hoje:");
             for (Event event : items) {
                 DateTime start = event.getStart().getDateTime();
                 if (start == null) {
                     start = event.getStart().getDate();
                 }
-                System.out.printf("%s - %s%n", start, event.getSummary());
+                eventos.add(start + " - " + event.getSummary());
             }
         }
-    }
 
-    public List<String> getEventosDoDia() {
-        List<String> eventos = new ArrayList<>();
-        eventos.add("Reunião com equipe às 10:00");
-        eventos.add("Consulta médica às 15:30");
         return eventos;
     }
-}
 
+    // Metodo para criar um evento no Google Calendar
+    public static void createEvent(String eventName) throws IOException, GeneralSecurityException {
+        HttpTransport httpTransport = GoogleNetHttpTransport.newTrustedTransport();
+        Credential credential = getCredentials(httpTransport);
+
+        Calendar service = new Calendar.Builder(httpTransport, JSON_FACTORY, credential)
+                .setApplicationName(APPLICATION_NAME)
+                .build();
+
+        // Cria o evento
+        Event event = new Event()
+                .setSummary(eventName) // Nome do evento
+                .setLocation("Localização do evento") // Local do evento
+                .setDescription("Descrição do evento");
+
+        // Define a data e a hora de início e término
+        DateTime startDateTime = new DateTime("2025-04-01T09:00:00-07:00"); // Data e hora de início
+        EventDateTime start = new EventDateTime()
+                .setDateTime(startDateTime)
+                .setTimeZone("America/Sao_Paulo"); // Defina o fuso horário
+        event.setStart(start);
+
+        DateTime endDateTime = new DateTime("2025-04-01T10:00:00-07:00"); // Data e hora de término
+        EventDateTime end = new EventDateTime()
+                .setDateTime(endDateTime)
+                .setTimeZone("America/Sao_Paulo"); // Defina o fuso horário
+        event.setEnd(end);
+
+        // Insere o evento no Google Calendar
+        service.events().insert("primary", event).execute();
+        System.out.println("Evento criado: " + event.getSummary());
+    }
+
+    // Metodo para retornar eventos do dia (usando a API)
+    public List<String> getEventosDoDia() throws IOException, GeneralSecurityException {
+        return listarEventosDoDia();
+    }
+}
